@@ -1,21 +1,34 @@
 import { open } from "sqlite";
 import sqlite3 from "sqlite3";
 
+// Init the db instance to null
 let dbInstance = null;
 
+// Init a new database instance
 export async function initDB() {
   dbInstance = await open({
     filename: "./ecommerce.sqlite",
     driver: sqlite3.Database,
   });
 
+  // Create the product table
   await dbInstance.exec(`CREATE TABLE IF NOT EXISTS product (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    category TEXT NOT NULL,
-    price REAL
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_name TEXT NOT NULL,
+    product_category TEXT NOT NULL,
+    product_price REAL
   )`);
 
+  // Create the cart table
+  await dbInstance.exec(`CREATE TABLE IF NOT EXISTS cart (
+    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_name TEXT,
+    product_price REAL,
+    product_category TEXT,
+    product_quantity INTEGER
+    )`);
+
+  // Call this function to check if data have been inserted
   await seedProducts();
 }
 
@@ -27,7 +40,8 @@ async function seedProducts() {
     console.log("Seed skipped, count =", count);
     return;
   }
-  await dbInstance.exec(`INSERT INTO product (id, name, category, price) VALUES
+  // Insert 50 products in the product table
+  await dbInstance.exec(`INSERT INTO product (product_id, product_name, product_category, product_price) VALUES
     (1,'Wireless Mouse','Electronics',19.99),
     (2,'Gaming Keyboard','Electronics',59.99),
     (3,'USB-C Charger','Electronics',24.50),
@@ -79,6 +93,7 @@ async function seedProducts() {
     (50,'Travel Power Bank 20K','Electronics',42.00);`);
 }
 
+// Export the database instance
 export function getDB() {
   return dbInstance;
 }
