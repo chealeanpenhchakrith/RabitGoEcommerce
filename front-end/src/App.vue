@@ -1,1 +1,7 @@
-<template><h1>hello</h1></template>
+<script setup>
+import ProductCard from "./components/ProductCard.vue";
+</script>
+
+<template>
+  <ProductCard />
+</template>

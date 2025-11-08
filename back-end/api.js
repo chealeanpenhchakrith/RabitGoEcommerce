@@ -1,5 +1,6 @@
 import express from "express";
 import { getDB, initDB } from "./db.js";
+import cors from "cors";
 
 // Create an express server
 const app = express();
@@ -7,6 +8,7 @@ const port = 3000;
 
 // Parse body into json
 app.use(express.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("Hello World");
