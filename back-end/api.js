@@ -63,6 +63,22 @@ app.post("/cart", async (req, res) => {
   }
 });
 
+// GET the product image
+app.get("/image/:id", async (req, res) => {
+  try {
+    const db = getDB();
+    if (!db) throw new Error("DB not initialized");
+    const row = await db.get(
+      "SELECT product_image FROM image WHERE image_id = ?",
+      req.params.id
+    );
+    res.type("image/jpeg").send(row.product_image);
+  } catch (err) {
+    console.error("GET /product/:id/image failed:", err);
+    res.sendStatus(500);
+  }
+});
+
 // Remove a product in the cart
 app.delete("/cart/:id", async (req, res) => {
   try {
