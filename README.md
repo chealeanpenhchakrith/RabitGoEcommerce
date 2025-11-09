@@ -25,6 +25,8 @@ Site e-commerce complet avec système d'authentification, gestion de panier et p
 ### 1. Installation (première fois)
 ```bash
 npm run setup-all
+
+npm i concurrently
 ```
 
 ### 2. Lancement
