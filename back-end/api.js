@@ -74,7 +74,7 @@ app.post("/auth/register", async (req, res) => {
     res.json({
       message: "User registered successfully",
       user: {
-        id: result.lastID,
+        user_id: result.lastID,
         username,
         email,
       },
@@ -127,7 +127,7 @@ app.post("/auth/login", async (req, res) => {
     res.json({
       message: "Login successful",
       user: {
-        id: user.user_id,
+        user_id: user.user_id,
         username: user.username,
         email: user.email,
       },

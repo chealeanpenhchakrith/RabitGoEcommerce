@@ -3,6 +3,8 @@
 ## Installation
 ```bash
 npm run setup-all
+
+npm i concurrently
 ```
 
 ## Lancement
