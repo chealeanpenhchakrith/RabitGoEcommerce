@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 py-8 px-4 pt-24">
+  <div class="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 py-8 px-4">
     <div class="max-w-5xl mx-auto">
       <div class="flex items-center justify-between mb-8">
         <h1 class="text-4xl font-bold text-slate-800">Shopping Cart</h1>
@@ -20,7 +20,7 @@
         </svg>
         <h2 class="text-2xl font-semibold text-slate-600 mb-2">Your cart is empty</h2>
         <p class="text-slate-500 mb-6">Add some products to get started!</p>
-        <button @click="$emit('close')" class="btn btn-primary">
+        <button @click="$emit('close')" class="btn btn-primary btn-lg">
           Continue Shopping
         </button>
       </div>
@@ -55,7 +55,7 @@
               <button 
                 @click="updateQuantity(item, item.product_quantity - 1)"
                 :disabled="item.product_quantity <= 1"
-                class="btn btn-circle btn-sm btn-outline"
+                class="btn btn-circle btn-sm btn-secondary"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
@@ -67,12 +67,12 @@
                 v-model.number="item.product_quantity"
                 @change="updateQuantity(item, item.product_quantity)"
                 min="1"
-                class="input input-bordered w-20 text-center font-semibold"
+                class="input input-bordered w-20 text-center font-semibold bg-white text-slate-800"
               />
               
               <button 
                 @click="updateQuantity(item, item.product_quantity + 1)"
-                class="btn btn-circle btn-sm btn-outline"
+                class="btn btn-circle btn-sm btn-secondary"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -120,7 +120,7 @@
           </div>
 
           <div class="mt-8 flex gap-4">
-            <button @click="$emit('close')" class="btn btn-outline flex-1">
+            <button @click="$emit('close')" class="btn btn-secondary flex-1">
               Continue Shopping
             </button>
             <button @click="checkout" class="btn btn-primary flex-1">
@@ -133,17 +133,37 @@
         </div>
       </div>
     </div>
+
+    <CheckoutModal 
+      v-if="showCheckoutModal"
+      :totalAmount="total"
+      :totalItems="totalItems"
+      @close="showCheckoutModal = false"
+      @orderSuccess="handleOrderSuccess"
+      @viewOrders="handleViewOrders"
+    />
+
+    <DeleteConfirmModal
+      v-if="showDeleteModal"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
 <script setup>
 import axios from "axios";
 import { ref, computed, onMounted } from "vue";
+import CheckoutModal from "./CheckoutModal.vue";
+import DeleteConfirmModal from "./DeleteConfirmModal.vue";
 
 const cartItems = ref([]);
 const loading = ref(true);
+const showCheckoutModal = ref(false);
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
 
-const emit = defineEmits(['close', 'cartUpdated']);
+const emit = defineEmits(['close', 'cartUpdated', 'viewOrders']);
 
 onMounted(() => {
   fetchCartItems();
@@ -152,7 +172,9 @@ onMounted(() => {
 const fetchCartItems = async () => {
   loading.value = true;
   try {
-    const response = await axios.get("http://localhost:3000/cart");
+    const response = await axios.get("http://localhost:3000/cart", {
+      withCredentials: true
+    });
     cartItems.value = response.data;
   } catch (error) {
     console.error("Error fetching cart:", error);
@@ -167,6 +189,8 @@ const updateQuantity = async (item, newQuantity) => {
   try {
     await axios.put(`http://localhost:3000/cart/${item.product_id}`, {
       product_quantity: newQuantity,
+    }, {
+      withCredentials: true
     });
     item.product_quantity = newQuantity;
     emit('cartUpdated');
@@ -177,16 +201,28 @@ const updateQuantity = async (item, newQuantity) => {
 };
 
 const removeFromCart = async (productId) => {
-  if (!confirm("Are you sure you want to remove this item?")) return;
-  
+  itemToDelete.value = productId;
+  showDeleteModal.value = true;
+};
+
+const confirmDelete = async () => {
   try {
-    await axios.delete(`http://localhost:3000/cart/${productId}`);
-    cartItems.value = cartItems.value.filter(item => item.product_id !== productId);
+    await axios.delete(`http://localhost:3000/cart/${itemToDelete.value}`, {
+      withCredentials: true
+    });
+    cartItems.value = cartItems.value.filter(item => item.product_id !== itemToDelete.value);
     emit('cartUpdated');
+    showDeleteModal.value = false;
+    itemToDelete.value = null;
   } catch (error) {
     console.error("Error removing from cart:", error);
     alert("Failed to remove item from cart");
   }
+};
+
+const cancelDelete = () => {
+  showDeleteModal.value = false;
+  itemToDelete.value = null;
 };
 
 const subtotal = computed(() => {
@@ -199,11 +235,50 @@ const tax = computed(() => subtotal.value * 0.1);
 const shipping = computed(() => cartItems.value.length > 0 ? 5.99 : 0);
 const total = computed(() => subtotal.value + tax.value + shipping.value);
 
+const totalItems = computed(() => {
+  return cartItems.value.reduce((sum, item) => sum + item.product_quantity, 0);
+});
+
 const checkout = () => {
-  alert(`Checkout - Total: $${total.value.toFixed(2)}\n\nThis is a demo. Payment processing not implemented.`);
+  showCheckoutModal.value = true;
+};
+
+const handleOrderSuccess = () => {
+  // Refresh cart after order is created
+  fetchCartItems();
+  emit('cartUpdated');
+};
+
+const handleViewOrders = () => {
+  showCheckoutModal.value = false;
+  emit('viewOrders');
+  emit('close');
 };
 
 const handleImageError = (event) => {
   event.target.src = 'https://via.placeholder.com/200x200?text=No+Image';
 };
 </script>
+
+<style scoped>
+/* Style pour les flèches (spinners) de l'input number */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+  background: #ffebeb;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+/* Contour gris clair pour l'input number */
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  border: 2px solid #cbd5e1 !important;
+}
+
+input[type="number"]::-moz-number-spin-box {
+  appearance: auto;
+}
+</style>

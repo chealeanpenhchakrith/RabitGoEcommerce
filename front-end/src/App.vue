@@ -5,17 +5,39 @@ import ProductCard from "./components/ProductCard.vue";
 import ShoppingCart from "./components/ShoppingCart.vue";
 import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
+import LoginModal from "./components/LoginModal.vue";
+import Profile from "./components/Profile.vue";
+import Orders from "./components/Orders.vue";
+
+// Configure axios to send cookies
+axios.defaults.withCredentials = true;
 
 const showCart = ref(false);
+const showLogin = ref(false);
 const cartItems = ref([]);
 const currentView = ref('products');
 const searchQuery = ref('');
+const user = ref(null);
 
 const cartCount = computed(() => {
   return cartItems.value.reduce((sum, item) => sum + item.product_quantity, 0);
 });
 
+// Check if user is authenticated
+const checkAuth = async () => {
+  try {
+    const response = await axios.get("http://localhost:3000/auth/me");
+    user.value = response.data.user;
+    fetchCartCount();
+  } catch (error) {
+    user.value = null;
+    console.log("User not authenticated");
+  }
+};
+
 const fetchCartCount = async () => {
+  if (!user.value) return;
+  
   try {
     const response = await axios.get("http://localhost:3000/cart");
     cartItems.value = response.data;
@@ -25,10 +47,14 @@ const fetchCartCount = async () => {
 };
 
 onMounted(() => {
-  fetchCartCount();
+  checkAuth();
 });
 
 const openCart = () => {
+  if (!user.value) {
+    showLogin.value = true;
+    return;
+  }
   showCart.value = true;
   fetchCartCount();
 };
@@ -37,17 +63,47 @@ const closeCart = () => {
   showCart.value = false;
 };
 
+const openLogin = () => {
+  showLogin.value = true;
+};
+
+const closeLogin = () => {
+  showLogin.value = false;
+};
+
+const handleLoginSuccess = (userData) => {
+  user.value = userData;
+  fetchCartCount();
+};
+
+const handleLogout = async () => {
+  try {
+    await axios.post("http://localhost:3000/auth/logout");
+    user.value = null;
+    cartItems.value = [];
+    currentView.value = 'products';
+  } catch (error) {
+    console.error("Error logging out:", error);
+  }
+};
+
 const handleCartUpdated = () => {
   fetchCartCount();
 };
 
 const handleProductAdded = () => {
+  if (!user.value) {
+    showLogin.value = true;
+    return;
+  }
   fetchCartCount();
 };
 
 const navigate = (view) => {
   currentView.value = view;
   searchQuery.value = ''; // Reset search when navigating
+  showCart.value = false; // Close cart when navigating
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
 };
 
 const handleSearch = (query) => {
@@ -55,6 +111,14 @@ const handleSearch = (query) => {
   if (currentView.value !== 'products') {
     currentView.value = 'products'; // Navigate to products page when searching
   }
+  showCart.value = false; // Close cart when searching
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
+};
+
+const handleViewOrders = () => {
+  currentView.value = 'orders';
+  showCart.value = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top
 };
 </script>
 
@@ -62,9 +126,12 @@ const handleSearch = (query) => {
   <div class="flex flex-col min-h-screen bg-slate-50">
     <Navbar 
       :cartCount="cartCount" 
+      :user="user"
       @openCart="openCart"
       @navigate="navigate"
       @search="handleSearch"
+      @openLogin="openLogin"
+      @logout="handleLogout"
     />
     
     <main v-if="!showCart" class="grow">
@@ -72,6 +139,21 @@ const handleSearch = (query) => {
         v-if="currentView === 'products'" 
         @productAdded="handleProductAdded"
         :searchQuery="searchQuery"
+        :isAuthenticated="!!user"
+      />
+
+      <Profile
+        v-else-if="currentView === 'profile'"
+        :user="user"
+        :cartCount="cartCount"
+        @navigate="navigate"
+        @openCart="openCart"
+        @logout="handleLogout"
+      />
+
+      <Orders
+        v-else-if="currentView === 'orders'"
+        @navigate="navigate"
       />
       
       <div v-else-if="currentView === 'about'" class="max-w-4xl mx-auto py-16 px-4">
@@ -100,14 +182,21 @@ const handleSearch = (query) => {
       </div>
     </main>
 
-    <Footer v-if="!showCart" class="mt-auto" />
-
-    <div v-if="showCart" class="fixed inset-0 bg-black bg-opacity-50 z-40 overflow-y-auto">
+    <main v-else class="grow">
       <ShoppingCart 
         @close="closeCart"
         @cartUpdated="handleCartUpdated"
+        @viewOrders="handleViewOrders"
       />
-    </div>
+    </main>
+
+    <Footer v-if="!showCart" class="mt-auto" />
+
+    <LoginModal 
+      v-if="showLogin"
+      @close="closeLogin"
+      @login-success="handleLoginSuccess"
+    />
   </div>
 </template>
 

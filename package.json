@@ -1,6 +1,10 @@
 {
   "scripts": {
-    "start": "concurrently \"cd back-end && npx nodemon api.js\" \"cd front-end && npm run dev\""
+    "start": "concurrently --kill-others-on-fail --prefix \"[{name}]\" --names \"backend,frontend\" --prefix-colors \"blue,green\" \"cd back-end && node api.js\" \"cd front-end && npm run dev\"",
+    "dev": "concurrently --kill-others-on-fail --prefix \"[{name}]\" --names \"backend,frontend\" --prefix-colors \"blue,green\" \"cd back-end && npx nodemon api.js\" \"cd front-end && npm run dev\"",
+    "setup": "cd back-end && npm install && cd ../front-end && npm install",
+    "migrate": "cd back-end && node migrate.js",
+    "setup-all": "npm run setup && npm run migrate"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

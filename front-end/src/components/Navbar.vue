@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar bg-linear-to-r from-indigo-600 to-purple-600 shadow-lg sticky top-0 z-50 px-4">
+  <nav class="navbar bg-linear-to-r from-indigo-600 to-purple-600 shadow-lg sticky top-0 z-100 px-4">
     <div class="navbar-start">
       <div class="dropdown">
         <div tabindex="0" role="button" class="btn btn-ghost btn-lg lg:hidden text-white">
@@ -7,13 +7,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
           </svg>
         </div>
-        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-white rounded-box w-52">
-          <li><a @click="$emit('navigate', 'products')" class="text-slate-700 hover:bg-indigo-100 py-3">Products</a></li>
-          <li><a @click="$emit('navigate', 'about')" class="text-slate-700 hover:bg-indigo-100 py-3">About</a></li>
-          <li><a @click="$emit('navigate', 'contact')" class="text-slate-700 hover:bg-indigo-100 py-3">Contact</a></li>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-110 p-2 shadow bg-white rounded-box w-52">
+          <li><a @click.prevent="$emit('navigate', 'products')" class="text-slate-700 hover:bg-indigo-100 py-3 cursor-pointer">Products</a></li>
+          <li><a @click.prevent="$emit('navigate', 'about')" class="text-slate-700 hover:bg-indigo-100 py-3 cursor-pointer">About</a></li>
+          <li><a @click.prevent="$emit('navigate', 'contact')" class="text-slate-700 hover:bg-indigo-100 py-3 cursor-pointer">Contact</a></li>
         </ul>
       </div>
-      <a @click="$emit('navigate', 'products')" class="btn btn-ghost text-2xl font-bold text-white hover:bg-white/10 px-4 py-3 h-auto">
+      <a @click.prevent="$emit('navigate', 'products')" class="btn btn-ghost text-2xl font-bold text-white hover:bg-white/10 px-4 py-3 h-auto cursor-pointer">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
         </svg>
@@ -44,9 +44,9 @@
       </div>
       
       <ul class="menu menu-horizontal px-1">
-        <li><a @click="$emit('navigate', 'products')" class="font-semibold text-white hover:bg-white/10 text-base px-4 py-3">Products</a></li>
-        <li><a @click="$emit('navigate', 'about')" class="font-semibold text-white hover:bg-white/10 text-base px-4 py-3">About</a></li>
-        <li><a @click="$emit('navigate', 'contact')" class="font-semibold text-white hover:bg-white/10 text-base px-4 py-3">Contact</a></li>
+        <li><a @click.prevent="$emit('navigate', 'products')" class="font-semibold text-white hover:bg-white/10 text-base px-4 py-3 cursor-pointer">Products</a></li>
+        <li><a @click.prevent="$emit('navigate', 'about')" class="font-semibold text-white hover:bg-white/10 text-base px-4 py-3 cursor-pointer">About</a></li>
+        <li><a @click.prevent="$emit('navigate', 'contact')" class="font-semibold text-white hover:bg-white/10 text-base px-4 py-3 cursor-pointer">Contact</a></li>
       </ul>
     </div>
     
@@ -62,7 +62,11 @@
         />
       </div>
       
-      <button @click="$emit('openCart')" class="btn btn-ghost btn-lg btn-circle relative text-white hover:bg-white/10">
+      <button 
+        v-if="user"
+        @click="$emit('openCart')" 
+        class="btn btn-ghost btn-lg btn-circle relative text-white hover:bg-white/10"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
@@ -71,19 +75,33 @@
         </span>
       </button>
       
-      <div class="dropdown dropdown-end">
+      <div v-if="user" class="dropdown dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-lg btn-circle text-white hover:bg-white/10">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </div>
-        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow bg-white rounded-box w-52">
-          <li><a class="text-slate-700 hover:bg-indigo-100 py-3">Profile</a></li>
-          <li><a class="text-slate-700 hover:bg-indigo-100 py-3">Orders</a></li>
-          <li><a class="text-slate-700 hover:bg-indigo-100 py-3">Settings</a></li>
-          <li><a class="text-slate-700 hover:bg-indigo-100 py-3">Logout</a></li>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-110 p-2 shadow bg-white rounded-box w-52">
+          <li class="menu-title px-4 py-2">
+            <span class="text-indigo-600 font-semibold">{{ user.username }}</span>
+          </li>
+          <li><a @click.prevent="$emit('navigate', 'profile')" class="text-slate-700 hover:bg-indigo-100 py-3 cursor-pointer">Profile</a></li>
+          <li><a @click.prevent="$emit('navigate', 'orders')" class="text-slate-700 hover:bg-indigo-100 py-3 cursor-pointer">Orders</a></li>
+          <li><a class="text-slate-700 hover:bg-indigo-100 py-3 cursor-pointer">Settings</a></li>
+          <li><a @click.prevent="$emit('logout')" class="text-red-600 hover:bg-red-50 py-3 cursor-pointer">Logout</a></li>
         </ul>
       </div>
+
+      <button 
+        v-else
+        @click="$emit('openLogin')" 
+        class="btn btn-ghost btn-lg text-white hover:bg-white/10"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+        </svg>
+        Login
+      </button>
     </div>
   </nav>
 </template>
@@ -95,10 +113,14 @@ defineProps({
   cartCount: {
     type: Number,
     default: 0
+  },
+  user: {
+    type: Object,
+    default: null
   }
 });
 
-const emit = defineEmits(['navigate', 'openCart', 'search']);
+const emit = defineEmits(['navigate', 'openCart', 'search', 'openLogin', 'logout']);
 
 const searchQuery = ref('');
 

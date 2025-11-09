@@ -20,14 +20,48 @@ export async function initDB() {
     product_price REAL NOT NULL
   )`);
 
-  // Create the cart table
+  // Create the users table
+  await dbInstance.exec(`CREATE TABLE IF NOT EXISTS users (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Create the cart table (modified to include user_id)
   await dbInstance.exec(`CREATE TABLE IF NOT EXISTS cart (
-    product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cart_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
     product_name TEXT NOT NULL,
     product_price REAL NOT NULL,
     product_category TEXT NOT NULL,
-    product_quantity INTEGER NOT NULL
+    product_quantity INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    UNIQUE(user_id, product_id)
     )`);
+
+  // Create the orders table
+  await dbInstance.exec(`CREATE TABLE IF NOT EXISTS orders (
+    order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    total_amount REAL NOT NULL,
+    status TEXT DEFAULT 'completed',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+  )`);
+
+  // Create the order_items table
+  await dbInstance.exec(`CREATE TABLE IF NOT EXISTS order_items (
+    order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    product_name TEXT NOT NULL,
+    product_price REAL NOT NULL,
+    product_quantity INTEGER NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
+  )`);
 
   // Create the image table
   await dbInstance.exec(`CREATE TABLE IF NOT EXISTS image (

@@ -90,6 +90,10 @@ const props = defineProps({
   searchQuery: {
     type: String,
     default: ''
+  },
+  isAuthenticated: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -135,6 +139,11 @@ onMounted(() => {
 });
 
 const addToCart = (product) => {
+  if (!props.isAuthenticated) {
+    emit('productAdded'); // This will trigger the login modal
+    return;
+  }
+
   axios
     .post("http://localhost:3000/cart", {
       product_id: product.product_id,
@@ -162,7 +171,21 @@ const addToCart = (product) => {
     })
     .catch((error) => {
       console.error("Error adding to cart:", error);
-      alert("Failed to add product to cart");
+      const errorMsg = error.response?.data?.error || "Failed to add product to cart";
+      
+      const toast = document.createElement('div');
+      toast.className = 'alert alert-error fixed top-20 right-4 w-96 z-50 shadow-lg';
+      toast.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>${errorMsg}</span>
+      `;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
     });
 };
 
