@@ -7,9 +7,9 @@ Site e-commerce complet avec système d'authentification, gestion de panier et p
 ### Core Features
 - 🔐 **Authentification utilisateur** (inscription, connexion, sessions)
 - 🛒 **Panier personnalisé** par utilisateur avec persistance en base de données
-- � **Système de commandes** complet avec historique détaillé
+- 📦 **Système de commandes** complet avec historique détaillé
 - 👤 **Page de profil** avec statistiques (commandes, montant total dépensé)
-- �🔍 **Recherche et filtres** par catégorie
+- 🔍 **Recherche et filtres** par catégorie
 - 📱 **Design responsive** adapté à tous les écrans
 - 🔒 **Sécurité** (mots de passe hashés, sessions HTTP-only)
 
@@ -131,4 +131,4 @@ Projet académique - OO Systems Development, EFREI Paris (Semestre 7)
 
 ---
 
-**Développé avec ❤️ pour EFREI Paris**
+**Développé par Leanpenhchakrith CHEA ,Alexandre Kalaydjian et Yuhao HUANG**
